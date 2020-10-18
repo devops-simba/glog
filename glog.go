@@ -213,6 +213,10 @@ func (l *Level) set(val Level) {
 	atomic.StoreInt32((*int32)(l), int32(val))
 }
 
+func (l *Level) change(val Level) (oldValue Level) {
+	return Level(atomic.SwapInt32((*int32)(l), int32(val)))
+}
+
 // String is part of the flag.Value interface.
 func (l *Level) String() string {
 	return strconv.FormatInt(int64(*l), 10)
@@ -981,6 +985,9 @@ func (l *loggingT) setV(pc uintptr) Level {
 // Verbose is a boolean type that implements Infof (like Printf) etc.
 // See the documentation of V for more information.
 type Verbose bool
+
+// SetV Set verbosity of logging at runtime
+func SetV(level Level) Level { return logging.verbosity.change(level) }
 
 // V reports whether verbosity at the call site is at least the requested level.
 // The returned value is a boolean of type Verbose, which implements Info, Infoln
